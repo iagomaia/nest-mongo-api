@@ -6,12 +6,12 @@ import {
   Get,
   UseGuards,
 } from '@nestjs/common';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto } from './../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { CredentialsDto } from './dto/credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from './get-user.decorator';
-import { User } from 'src/users/user.entity';
+import { User } from './../users/user.entity';
 
 @Controller('auth')
 export class AuthController {

@@ -16,6 +16,7 @@ export class UserRepository extends Repository<User> {
     role: UserRole,
   ): Promise<User> {
     const { email, name, password } = createUserDto;
+
     const user = this.create();
     user.email = email;
     user.name = name;
