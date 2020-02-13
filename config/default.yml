@@ -1,0 +1,10 @@
+server:
+  port: 3000
+
+db:
+  type: 'mongodb'
+  port: 27017
+  database: 'applicationDB'
+
+jwt:
+  expiresIn: 43200

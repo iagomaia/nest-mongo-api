@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: api.Dockerfile
+  #   ports:
+  #     - '3000:3000'
+  #   container_name: api
+  #   restart: always
+  #   volumes:
+  #     - api-logs:/usr/src/node-api/logs:rw
+  #   environment:
+  #     - DB_HOST=mongodb
+  #     - DB_PORT=27017
+  #     - DB_NAME=applicationDB
+  #     - TYPEORM_SYNC=true
+  #     - NODE_ENV=development
+  #   depends_on:
+  #     - mongodb
+
+  mongo-express:
+    image: mongo-express
+    ports:
+      - '8081:8081'
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:bionic
+    ports:
+      - '27017:27017'
+    container_name: 'mongodb'
+    expose:
+      - '27017'
+    restart: always
+    volumes:
+      - mongo-data:/data/db:rw
+      - mongo-conf:/data/conf:rw
+
+volumes:
+  api-logs:
+  mongo-data:
+  mongo-conf:
