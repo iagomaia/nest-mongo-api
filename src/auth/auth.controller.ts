@@ -37,8 +37,6 @@ export class AuthController {
   @Get('/me')
   @UseGuards(AuthGuard())
   getMe(@GetUser() user: User): User {
-    delete user.password;
-    delete user.salt;
     return user;
   }
 }

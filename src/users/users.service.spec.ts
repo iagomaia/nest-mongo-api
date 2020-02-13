@@ -3,10 +3,14 @@ import { UserRepository } from './users.repository';
 import { UserService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRole } from './user-roles.enum';
-import { UnprocessableEntityException } from '@nestjs/common';
+import {
+  UnprocessableEntityException,
+  NotFoundException,
+} from '@nestjs/common';
 
 const mockUsersRepository = () => ({
   createUser: jest.fn(),
+  findOne: jest.fn(),
 });
 
 describe('UsersService', () => {
@@ -58,6 +62,22 @@ describe('UsersService', () => {
       expect(service.createAdminUser(mockCreateUserDto)).rejects.toThrow(
         UnprocessableEntityException,
       );
+    });
+  });
+
+  describe('findUserById', () => {
+    it('should return the found user', async () => {
+      userRepository.findOne.mockResolvedValue('mockUser');
+      expect(userRepository.findOne).not.toHaveBeenCalled();
+
+      const result = await service.findUserById('mockId');
+      expect(userRepository.findOne).toHaveBeenCalledWith('mockId');
+      expect(result).toEqual('mockUser');
+    });
+
+    it('should throw an error as user is not found', async () => {
+      userRepository.findOne.mockResolvedValue(null);
+      expect(service.findUserById('mockId')).rejects.toThrow(NotFoundException);
     });
   });
 });

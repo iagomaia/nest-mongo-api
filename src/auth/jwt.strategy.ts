@@ -20,7 +20,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload) {
     const { id } = payload;
-    const user = await this.userRepository.findOne(id);
+    const user = await this.userRepository.findOne(id, {
+      select: ['name', 'email', 'status', 'role'],
+    });
     if (!user) {
       throw new UnauthorizedException('Usuário não encontrado');
     }

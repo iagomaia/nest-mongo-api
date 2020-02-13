@@ -1,4 +1,4 @@
-import { Repository, EntityRepository } from 'typeorm';
+import { EntityRepository, MongoRepository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRole } from './user-roles.enum';
@@ -8,9 +8,44 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { CredentialsDto } from 'src/auth/dto/credentials.dto';
+import { FindUsersQueryDto } from './dto/find-users-query-dto';
 
 @EntityRepository(User)
-export class UserRepository extends Repository<User> {
+export class UserRepository extends MongoRepository<User> {
+  async findUsers(
+    queryDto: FindUsersQueryDto,
+  ): Promise<{ users: User[]; total: number }> {
+    queryDto.status = queryDto.status === undefined ? true : queryDto.status;
+    queryDto.page = queryDto.page < 1 ? 1 : queryDto.page;
+    const { email, name, status, role } = queryDto;
+
+    const [users, total] = await this.findAndCount({
+      skip: (queryDto.page - 1) * queryDto.limit,
+      take: +queryDto.limit,
+      order: queryDto.sort ? JSON.parse(queryDto.sort) : undefined,
+      where: {
+        status: {
+          $eq: status,
+        },
+        email: {
+          $regex: email || '',
+          $options: 'i',
+        },
+        name: {
+          $regex: name || '',
+          $options: 'i',
+        },
+        role: {
+          $regex: role || '',
+          $options: 'i',
+        },
+      },
+      select: ['name', 'email', 'role', 'status'],
+    });
+
+    return { users, total };
+  }
+
   async createUser(
     createUserDto: CreateUserDto,
     role: UserRole,
@@ -21,6 +56,7 @@ export class UserRepository extends Repository<User> {
     user.email = email;
     user.name = name;
     user.role = role;
+    user.status = true;
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
     try {

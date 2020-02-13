@@ -6,6 +6,8 @@ import {
   ObjectID,
   Column,
   ObjectIdColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
@@ -23,13 +25,22 @@ export class User extends BaseEntity {
   name: string;
 
   @Column({ nullable: false })
-  role;
+  role: string;
+
+  @Column()
+  status: boolean;
 
   @Column({ nullable: false })
   password: string;
 
   @Column({ nullable: false })
   salt: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   async checkPassword(password: string): Promise<boolean> {
     const hash = await bcrypt.hash(password, this.salt);
