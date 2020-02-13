@@ -7,7 +7,8 @@ import {
   Get,
   Param,
   Query,
-  Req,
+  Patch,
+  ForbiddenException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './users.service';
@@ -18,6 +19,9 @@ import { UserRole } from './user-roles.enum';
 import { ReturnUserDto } from './dto/return-user.dto';
 import { FindUsersQueryDto } from './dto/find-users-query-dto';
 import { ReturnUsersDto } from './dto/return-users.dto';
+import { UpdateUserDto } from './dto/update-user-dto';
+import { GetUser } from '../auth/get-user.decorator';
+import { User } from './user.entity';
 
 @Controller('users')
 @UseGuards(AuthGuard(), RolesGuard)
@@ -27,7 +31,6 @@ export class UserController {
   @Get()
   @Role(UserRole.ADMIN)
   async findUsers(@Query() query: FindUsersQueryDto): Promise<ReturnUsersDto> {
-    query.limit = query.limit > 100 ? 100 : query.limit;
     const found = await this.userService.findUsers(query);
     return {
       found,
@@ -35,6 +38,20 @@ export class UserController {
     };
   }
 
+  @Patch(':id')
+  async updateUser(
+    @Body() updateUserDto: UpdateUserDto,
+    @GetUser() user: User,
+    @Param('id') id: string,
+  ) {
+    if (user.role != UserRole.ADMIN && user.id.toString() != id) {
+      throw new ForbiddenException(
+        'Você não tem autorização para acessar esse recurso',
+      );
+    } else {
+      return this.userService.updateUser(updateUserDto, id);
+    }
+  }
   @Get(':id')
   @Role(UserRole.ADMIN)
   async findUserById(@Param('id') id): Promise<ReturnUserDto> {

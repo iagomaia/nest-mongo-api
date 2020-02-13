@@ -9,6 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './user.entity';
 import { UserRole } from './user-roles.enum';
 import { FindUsersQueryDto } from './dto/find-users-query-dto';
+import { UpdateUserDto } from './dto/update-user-dto';
 
 @Injectable()
 export class UserService {
@@ -32,6 +33,16 @@ export class UserService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
+    return user;
+  }
+
+  async updateUser(updateUserDto: UpdateUserDto, id: string): Promise<User> {
+    const user = await this.findUserById(id);
+    const { name, email, role } = updateUserDto;
+    user.name = name ? name : user.name;
+    user.email = email ? email : user.email;
+    user.role = role ? role : user.role;
+    await user.save();
     return user;
   }
 

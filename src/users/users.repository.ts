@@ -17,6 +17,8 @@ export class UserRepository extends MongoRepository<User> {
   ): Promise<{ users: User[]; total: number }> {
     queryDto.status = queryDto.status === undefined ? true : queryDto.status;
     queryDto.page = queryDto.page < 1 ? 1 : queryDto.page;
+    queryDto.limit = queryDto.limit > 100 ? 100 : queryDto.limit;
+
     const { email, name, status, role } = queryDto;
 
     const [users, total] = await this.findAndCount({
@@ -77,7 +79,7 @@ export class UserRepository extends MongoRepository<User> {
 
   async checkCredentials(credentialsDto: CredentialsDto): Promise<string> {
     const { email, password } = credentialsDto;
-    const user = await this.findOne({ email });
+    const user = await this.findOne({ email, status: true });
 
     if (user && (await user.checkPassword(password))) {
       return user.id.toString();
