@@ -36,6 +36,12 @@ export class User extends BaseEntity {
   @Column({ nullable: false })
   salt: string;
 
+  @Column({ nullable: true })
+  confirmationToken: string;
+
+  @Column({ nullable: true })
+  recoverToken: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

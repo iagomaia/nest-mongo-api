@@ -9,3 +9,9 @@ db:
 jwt:
   expiresIn: 43200
   secret: '123'
+
+mail:
+  host: 'smtp.kinghost.net'
+  port: 587
+  user: contato@uuebi.com
+  password: m5cycbr

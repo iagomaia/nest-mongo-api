@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { CredentialsDto } from 'src/auth/dto/credentials.dto';
 import { FindUsersQueryDto } from './dto/find-users-query-dto';
+import * as crypto from 'crypto';
+import { ChangePasswordDto } from '../auth/dto/change-password.dto';
 
 @EntityRepository(User)
 export class UserRepository extends MongoRepository<User> {
@@ -59,6 +61,7 @@ export class UserRepository extends MongoRepository<User> {
     user.name = name;
     user.role = role;
     user.status = true;
+    user.confirmationToken = crypto.randomBytes(32).toString('hex');
     user.salt = await bcrypt.genSalt();
     user.password = await this.hashPassword(password, user.salt);
     try {
@@ -77,12 +80,19 @@ export class UserRepository extends MongoRepository<User> {
     }
   }
 
-  async checkCredentials(credentialsDto: CredentialsDto): Promise<string> {
+  async changePassword(id: string, password: string) {
+    const user = await this.findOne(id);
+    user.salt = await bcrypt.genSalt();
+    user.password = await this.hashPassword(password, user.salt);
+    await user.save();
+  }
+
+  async checkCredentials(credentialsDto: CredentialsDto): Promise<User> {
     const { email, password } = credentialsDto;
     const user = await this.findOne({ email, status: true });
 
     if (user && (await user.checkPassword(password))) {
-      return user.id.toString();
+      return user;
     } else {
       return null;
     }

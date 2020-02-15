@@ -38,10 +38,11 @@ export class UserService {
 
   async updateUser(updateUserDto: UpdateUserDto, id: string): Promise<User> {
     const user = await this.findUserById(id);
-    const { name, email, role } = updateUserDto;
+    const { name, email, role, status } = updateUserDto;
     user.name = name ? name : user.name;
     user.email = email ? email : user.email;
     user.role = role ? role : user.role;
+    user.status = status === undefined ? true : status;
     await user.save();
     return user;
   }

@@ -5,6 +5,10 @@ import {
   ValidationPipe,
   Get,
   UseGuards,
+  Patch,
+  Param,
+  Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
@@ -12,6 +16,9 @@ import { CredentialsDto } from './dto/credentials.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from './get-user.decorator';
 import { User } from './../users/user.entity';
+import { ReturnUserDto } from '../users/dto/return-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UserRole } from '../users/user-roles.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -31,12 +38,59 @@ export class AuthController {
   async signIn(
     @Body(ValidationPipe) credentiaslsDto: CredentialsDto,
   ): Promise<{ token: string }> {
-    return this.authService.signIn(credentiaslsDto);
+    return await this.authService.signIn(credentiaslsDto);
   }
 
   @Get('/me')
   @UseGuards(AuthGuard())
   getMe(@GetUser() user: User): User {
     return user;
+  }
+
+  @Patch(':token')
+  async confirmEmail(@Param('token') token: string): Promise<ReturnUserDto> {
+    const user = await this.authService.confirmEmail(token);
+    return {
+      user,
+      message: 'Email confirmado',
+    };
+  }
+
+  @Patch(':id/change-password')
+  @UseGuards(AuthGuard())
+  async changePassword(
+    @Param('id') id: string,
+    @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+    @Req() req,
+  ) {
+    const user = req.user;
+    if (user.role !== UserRole.ADMIN && user.id.toString() !== id)
+      throw new UnauthorizedException(
+        'Você não tem permissão para realizar esta operação',
+      );
+
+    await this.authService.changePassword(id, changePasswordDto);
+  }
+
+  @Post('/send-recover-email')
+  async sendRecoverPasswordEmail(
+    @Body('email') email: string,
+  ): Promise<{ message: string }> {
+    await this.authService.sendRecoverPasswordEmail(email);
+    return {
+      message: 'Foi enviado um email com instruções para resetar sua senha',
+    };
+  }
+
+  @Patch('/reset-password/:token')
+  async resetPassword(
+    @Param('token') token: string,
+    @Body(ValidationPipe) changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    await this.authService.resetPassword(token, changePasswordDto);
+
+    return {
+      message: 'Senha alterada com sucesso',
+    };
   }
 }

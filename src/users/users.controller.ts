@@ -40,7 +40,7 @@ export class UserController {
 
   @Patch(':id')
   async updateUser(
-    @Body() updateUserDto: UpdateUserDto,
+    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
     @GetUser() user: User,
     @Param('id') id: string,
   ) {

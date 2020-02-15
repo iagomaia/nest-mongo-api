@@ -8,8 +8,11 @@ import {
 } from 'nest-winston';
 import { AuthModule } from './auth/auth.module';
 import * as winston from 'winston';
+import * as config from 'config';
 import { LoggerInterceptor } from './auth/logger.interceptor';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { HandlebarsAdapter, MailerModule } from '@nest-modules/mailer';
+import * as path from 'path';
 
 @Module({
   imports: [
@@ -30,6 +33,19 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
           dirname: 'logs',
         }),
       ],
+    }),
+    MailerModule.forRoot({
+      template: {
+        dir: path.resolve(__dirname, '..', 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          defaultLayout: 'template',
+          partialsDir: path.resolve(__dirname, '..', 'templates/partials'),
+          extName: '.hbs',
+          layoutsDir: path.resolve(__dirname, '..', 'templates'),
+        },
+      },
+      transport: `smtps://${config.mail.user}:${config.mail.password}@${config.mail.host}`,
     }),
     UserModule,
     AuthModule,
