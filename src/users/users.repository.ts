@@ -10,7 +10,6 @@ import {
 import { CredentialsDto } from 'src/auth/dto/credentials.dto';
 import { FindUsersQueryDto } from './dto/find-users-query-dto';
 import * as crypto from 'crypto';
-import { ChangePasswordDto } from '../auth/dto/change-password.dto';
 
 @EntityRepository(User)
 export class UserRepository extends MongoRepository<User> {
