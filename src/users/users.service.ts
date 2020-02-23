@@ -42,7 +42,7 @@ export class UserService {
     user.name = name ? name : user.name;
     user.email = email ? email : user.email;
     user.role = role ? role : user.role;
-    user.status = status === undefined ? true : status;
+    user.status = status === undefined ? user.status : status;
     await user.save();
     return user;
   }
