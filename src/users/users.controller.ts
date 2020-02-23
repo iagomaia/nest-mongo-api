@@ -52,6 +52,7 @@ export class UserController {
       return this.userService.updateUser(updateUserDto, id);
     }
   }
+
   @Get(':id')
   @Role(UserRole.ADMIN)
   async findUserById(@Param('id') id): Promise<ReturnUserDto> {
